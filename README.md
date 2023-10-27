@@ -34,6 +34,8 @@ fastqc *.fastq.gz -o /path/to/results/dir # Fastqc on 8 samples of RNA-Seq data
 Trimming is a useful step of pre-alignment QC, which removes low quality reads and contaminating adapter sequences. Here, the tool trimmomatic is used to trim the data. For paired-end data:
 run fastqc on all the rnaseq fastq files.....
 
+This script is specific to run multiple samples at once, so a for loop is created
+
 ```
 #!/bin/bash
 #SBATCH --cpus-per-task=2 --mem-per-cpu=16g --ntasks=1
@@ -41,15 +43,15 @@ run fastqc on all the rnaseq fastq files.....
 #SBATCH --cpus-per-task=2 --mem-per-cpu=1g  --ntasks=8
 #srun run.app              
 
-mkdir -p ../results/trim                                                                                                                                                                                             
+mkdir -p ../path/to/output/folder                                                                                                                                                                                             
 module load trimmomatic
 
 for f in *_R1_001.fastq.gz # for each sample
 do
   n=${f%%_R1_001.fastq.gz}
-java -jar /shared/centos7/anaconda3/2021.11/envs/BINF-12-2021/pkgs/trimmomatic0.39hdfd78af_2/share/trimmomatic-0.39-2/trimmomatic.jar PE -threads 40 $1 /home/guduru.g/TASK_RNASEQ/QC_data/${n}_R1_001.fastq.gz /home/guduru.g/TASK_RNASEQ/QC_data/${n}_R2_001.fastq.gz /home/guduru.g/TASK_RNASEQ/results/trim/${n}_R1_trimmed.fastq.gz /home/guduru.g/TASK_RNASEQ/results/trim/${n}_R1_unpaired.fastq.gz /home/guduru.g/TASK_RNASEQ/results/trim/${n}_R2_trimmed.fastq.gz /home/guduru.g/TASK_RNASEQ/results/trim/${n}_R2_unpaired.fastq.gz ILLUMINACLIP:/shared/centos7/anaconda3/2021.11/envs/BINF-12-2021/pkgs/trimmomatic-0.39-hdfd78af_2/share/trimmomatic-0.39-2/adapters/TruSeq3-PE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36                                                                                                                         done
+  java -jar /shared/centos7/anaconda3/2021.11/envs/BINF-12-2021/pkgs/trimmomatic0.39hdfd78af_2/share/trimmomatic-0.39-2/trimmomatic.jar PE -threads 40 $1 /path/to/input/FASTA_file_1/${n}_R1_001.fastq.gz/path/to/input/FASTA_file_2/${n}_R2_001.fastq.gz /path/to/output/trimmed_FASTA_file_1/${n}_R1_trimmed.fastq.gz /path/to/output/unpaired_FASTA_file_1/${n}_R1_unpaired.fastq.gz /path/to/output/trimmed_FASTA_file_2/${n}_R2_trimmed.fastq.gz /path/to/output/unpaired_FASTA_file_2/${n}_R2_unpaired.fastq.gz ILLUMINACLIP:/shared/centos7/anaconda3/2021.11/envs/BINF-12-2021/pkgs/trimmomatic-0.39-hdfd78af_2/share/trimmomatic-0.39-2/adapters/TruSeq3-PE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36                                                                                                          done
 ```
-## Align to the reference genome
+## Building the STAR index
 The raw RNA-seq data in fastq format will be aligned to the reference genome, along with a reference transcriptome, to output two alignment files: 
 the genome alignment and 
 the transcriptome alignemnt.
