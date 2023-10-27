@@ -11,24 +11,28 @@
 #SBATCH --error=slurmout/star-index_%A.err # File to which STDERR will be written
 #SBATCH --mail-type=ALL
 
-#outpath="References"
-#mkdir -p ${outpath}
+outpath="References"
+mkdir -p ${outpath}
 
-#cd ${outpath}
+cd ${outpath}
 
-#wget ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M25/GRCm38.primary_assembly.genome.fa.gz
-#unzip GRCm38.primary_assembly.genome.fa.gz
-#chmod 777 GRCm38.primary_assembly.genome.fa
+wget ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M25/GRCm38.primary_assembly.genome.fa.gz
+gunzip -c GRCm38.primary_assembly.genome.fa.gz
+chmod 544 GRCm38.primary_assembly.genome.fa
 
-FASTA="/home/gayathri/RNA-seq/data/References/GRCm38.primary_assembly.genome.fa"
+FASTA="/home/guduru.g/TASK_RNASEQ/STAR/References/GRCm38.primary_assembly.genome.fa"
 
-#wget ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M25/gencode.vM25.annotation.gtf.gz
-#gunzip gencode.vM25.annotation.gtf.gz
-#chmod 777 gencode.vM25.annotation.gtf        
+wget ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M25/gencode.vM25.annotation.gtf.gz
+gunzip -c gencode.vM25.annotation.gtf.gz
+chmod 544 gencode.vM25.annotation.gtf        
 
-GTF="/home/gayathri/RNA-seq/data/References/gencode.vM25.annotation.gtf"
+GTF="/home/guduru.g/TASK_RNASEQ/STAR/References/gencode.vM25.annotation.gtf"
 
-#mkdir star.overlap100.gencode.M25
-#cd star.overlap100.gencode.M25
+cd ..
 
-STAR --runThreadN 8 --runMode genomeGenerate --genomeDir . --genomeFastaFiles ${FASTA} --sjdbGTFfile ${GTF} --sjdbOverhang 100
+mkdir -p index 
+
+#conda install -c bioconda star
+module load star
+
+/home/guduru.g/miniconda2/pkgs/star-2.5.2b-0/bin/STAR --runThreadN 8 --runMode genomeGenerate --genomeDir /home/guduru.g/TASK_RNASEQ/STAR/index/ --genomeFastaFiles ${FASTA} --sjdbGTFfile ${GTF} --sjdbOverhang 100
