@@ -2,7 +2,8 @@
 
 ## Prerequisites/Dependencies to run a RNA-seq pipeline.
 
-**JAVA version above 11.0**
+### JAVA version above 11.0
+
 To install Java on a server using wget, you can use the following steps:
 
 Open a terminal window on the server and login.
@@ -23,7 +24,7 @@ Restart the server.
 sudo reboot
 ```
 
-**Miniconda** (https://docs.conda.io/projects/miniconda/en/latest/)
+### Miniconda (https://docs.conda.io/projects/miniconda/en/latest/)
 ```
 mkdir -p ~/miniconda3
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda3/miniconda.sh
@@ -31,7 +32,7 @@ bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3
 rm -rf ~/miniconda3/miniconda.sh
 ```
 
-### Data Analysis of RNA-Seq data
+# Data Analysis of RNA-Seq data
 Programs required: it is recommended that the user has anaconda installed, through which all required programs can be installed. Assuming that anaconda is available, all the required programs can be installed using the following:
 
 ```
