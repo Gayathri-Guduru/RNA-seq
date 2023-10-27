@@ -154,20 +154,16 @@ STAR can then be run to align the fastq raw data to the genome. If the fastq fil
 
 For paired-end data:
 ```
-# define variables
-index = /path/to/indexfolder
-
 # get our data files
-FILES=/path/to/trimmed/files/*_trimmed.fastq.gz
+FILES=/path/to/trimmed/files/*.fastq
 
 module load star
 for f in $FILES
 
 do
   echo $f
-  base=$(basename $f .fastq.gz)
+  base=$(basename $f .fastq)
   echo $base
-  STAR --runThreadN 8 --genomeDir $index --readFilesIn $f --outSAMtype BAM SortedByCoordinate --quantMode GeneCounts --readFilesCommand zcat --outFileNamePrefix $base"_"                                                                                                                                                                                                                                                                                                           
-done
+  STAR --runThreadN 8 --genomeDir /path/to/indexfolder --readFilesIn $f --outSAMtype BAM SortedByCoordinate --quantMode GeneCounts --readFilesCommand cat --outFileNamePrefix $base"_"                                                                                                                          done
 ```
 
