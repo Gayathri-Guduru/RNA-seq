@@ -140,30 +140,19 @@ Once index is built, we have to not forget to remove those unzipped files
 rm GRCm38.primary_assembly.genome.fa
 rm gencode.vM25.annotation.gtf
 ```
-
-Now unzip the trimmed fastq files and change permissions the file inorder for the STAR to run.
-```
-gunzip *.trimmed.fastq.gz
-chmod 544 *.trimmed.fastq
-```
-
-
 ## Aligning reads to the genome(STAR)
 
 STAR can then be run to align the fastq raw data to the genome. If the fastq files are in the compressed .gz format, the --readFilesCommand zcat argument is added. The output file should be unsorted, as required for the downstream quantification step using Salmon. The following options are shown according to the ENCODE recommendations.
 
 For paired-end data:
 ```
-# get our data files
-FILES=/path/to/trimmed/files/*.fastq
+mkdir -p alignments                                                                                                                                                                                                                         module load star                                                                                                                                                                                                                            
 
-module load star
-for f in $FILES
+for file in /home/guduru.g/TASK_RNASEQ/results/trim/trimmed/*.fastq.gz ; do 
+base=$(basename "$file" .fastq.gz)
+echo "Processing: $base"                                                                                                                                                                                                                                                                                                                                                                                                              output_prefix="/home/guduru.g/TASK_RNASEQ/STAR/alignments/${base}_"                                                                                                                                                                         /home/guduru.g/miniconda2/pkgs/star-2.5.2b-0/bin/STAR --runThreadN 24 --genomeDir /home/guduru.g/TASK_RNASEQ/STAR/index/M25  --readFilesCommand gunzip -c --readFilesIn "$file" --outSAMtype BAM SortedByCoordinate --quantMode GeneCounts --outFileNamePrefix "$output_prefix"
 
-do
-  echo $f
-  base=$(basename $f .fastq)
-  echo $base
-  STAR --runThreadN 8 --genomeDir /path/to/indexfolder --readFilesIn $f --outSAMtype BAM SortedByCoordinate --quantMode GeneCounts --readFilesCommand cat --outFileNamePrefix $base"_"                                                                                                                          done
+done
+echo "done!"
 ```
 
