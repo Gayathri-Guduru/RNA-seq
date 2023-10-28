@@ -146,13 +146,55 @@ STAR can then be run to align the fastq raw data to the genome. If the fastq fil
 
 For paired-end data:
 ```
-mkdir -p alignments                                                                                                                                                                                                                         module load star                                                                                                                                                                                                                            
+mkdir -p alignments                                                                                                                                                                         module load star
 
-for file in /home/guduru.g/TASK_RNASEQ/results/trim/trimmed/*.fastq.gz ; do 
+for file in /path/to/input/trimmed/files/*.fastq.gz ; do 
 base=$(basename "$file" .fastq.gz)
-echo "Processing: $base"                                                                                                                                                                                                                                                                                                                                                                                                              output_prefix="/home/guduru.g/TASK_RNASEQ/STAR/alignments/${base}_"                                                                                                                                                                         /home/guduru.g/miniconda2/pkgs/star-2.5.2b-0/bin/STAR --runThreadN 24 --genomeDir /home/guduru.g/TASK_RNASEQ/STAR/index/M25  --readFilesCommand gunzip -c --readFilesIn "$file" --outSAMtype BAM SortedByCoordinate --quantMode GeneCounts --outFileNamePrefix "$output_prefix"
+echo "Processing: $base"                                                                                                                                                                                                                                                                                                                                                                 output_prefix="/home/guduru.g/TASK_RNASEQ/STAR/alignments/${base}_"                                                                                                                         STAR --runThreadN 24 --genomeDir path/to/genome/index/folder  --readFilesCommand gunzip -c --readFilesIn "$file" --outSAMtype BAM SortedByCoordinate --quantMode GeneCounts --outFileNamePrefix "$output_prefix"
 
 done
 echo "done!"
 ```
+
+## Post-alignment QC
+The STAR alignment will have output several files with the following file names:
+
+1)Aligned.toTranscriptome.out.bam
+2)Log.final.out
+3)Log.out
+4)Log.progress.out
+5)SJ.out.tab
+
+The bam file will be used in downstream analysis, the ```Aligned.toTranscriptome.out.bam``` for quantification and differential gene expression analysis.
+
+## Sort and index BAM files 
+
+We use samtools inorder to get a sorted bam files that acts as an input for the quantification step and indexed files(.bai files - stats of indexded files can be known)
+Make sure to write and run the script in the same directory where the input files are present.
+
+```
+#!/bin/bash
+#sort.sh                                                                                                                                                                                 
+
+mkdir -p /home/guduru.g/TASK_RNASEQ/STAR/alignments/sorted_bam*
+for f in *.sortedByCoord.out.bam # for each sample
+
+do
+n=${f%%.sortedByCoord.out.bam}                                                                                                                                                              samtools sort -@ 16 -m 5G $f -o path/to/output/${n}.sorted.bam --output-fmt BAM
+done
+```
+
+```
+#!/bin/bash
+#index.sh                                                                                                                                                                                 
+
+for f in *_trimmed_Aligned.sorted.bam # for each input sample
+
+do
+n=${f%%_trimmed_Aligned.sorted.bam}                                                                                                                                                         samtools index -@ 16 -m 14 $ ${n}.sorted.bai
+done
+```
+
+## Quantification
+The bam file previously aligned to the transcriptome by STAR will next be input into Stringtie in alignment-mode, in order to generate a matrix of gene counts. 
 
