@@ -75,6 +75,9 @@ And if you want to end the interactive mode type *exit*
 The raw sequence data should first be assessed for quality. FastQC reports can be generated for all samples to assess sequence quality, GC content, duplication rates, length distribution, K-mer content and adapter contamination. For paired-end reads, run fastqc on both files, with the results output to the current directory:
 
 ```
+#!/bin/bash
+#fastqc.sh
+
 fastqc *.fastq.gz -o /path/to/results/dir # Fastqc on 8 samples of RNA-Seq data
 ```
 
@@ -87,8 +90,8 @@ This script is specific to run multiple samples at once, so a for loop is create
 
 ```
 #!/bin/bash
+#trim.sh
 #SBATCH --cpus-per-task=2 --mem-per-cpu=16g --ntasks=1
-#SBATCH hetjob
 #SBATCH --cpus-per-task=2 --mem-per-cpu=1g  --ntasks=8
 #srun run.app              
 
@@ -110,6 +113,9 @@ This version of the recent GRCh38 reference genome excludes alternative contigs 
 The downloaded genome should be indexed with STAR. The indexing also requires a file containing gene annotation, which comes in a gtf format. The user should aim to use the most up-to-date reference files, while ensuring that the format is the same as the reference genome. 
 
 ```
+#!/bin/bash
+#star_index.sh
+
 mkdir References # create a folder to dowload the reference genome
 cd References
 
@@ -146,6 +152,9 @@ STAR can then be run to align the fastq raw data to the genome. If the fastq fil
 
 For paired-end data:
 ```
+#!/bin/bash
+#star.sh
+
 mkdir -p alignments                                                                                                                                                                         module load star
 
 for file in /path/to/input/trimmed/files/*.fastq.gz ; do 
