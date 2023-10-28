@@ -160,9 +160,13 @@ echo "done!"
 The STAR alignment will have output several files with the following file names:
 
 1)Aligned.toTranscriptome.out.bam
+
 2)Log.final.out
+
 3)Log.out
+
 4)Log.progress.out
+
 5)SJ.out.tab
 
 The bam file will be used in downstream analysis, the ```Aligned.toTranscriptome.out.bam``` for quantification and differential gene expression analysis.
