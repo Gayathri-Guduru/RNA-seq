@@ -74,6 +74,8 @@ And if you want to end the interactive mode type *exit*
 
 The raw sequence data should first be assessed for quality. FastQC reports can be generated for all samples to assess sequence quality, GC content, duplication rates, length distribution, K-mer content and adapter contamination. For paired-end reads, run fastqc on both files, with the results output to the current directory:
 
+Input file: fastq.gz
+output file: .html, .zip
 ```
 #!/bin/bash
 #fastqc.sh
@@ -87,6 +89,8 @@ Trimming is a useful step of pre-alignment QC, which removes low quality reads a
 run fastqc on all the rnaseq fastq files.....
 
 This script is specific to run multiple samples at once, so a for loop is created
+Input file: fastq.gz
+output file: trimmed.fastq.gz
 
 ```
 #!/bin/bash
@@ -112,6 +116,8 @@ The RNA reads are aligned using the STAR. The reference genome used is the GRCh3
 This version of the recent GRCh38 reference genome excludes alternative contigs which may cause fragments to map in multiple locations. 
 The downloaded genome should be indexed with STAR. The indexing also requires a file containing gene annotation, which comes in a gtf format. The user should aim to use the most up-to-date reference files, while ensuring that the format is the same as the reference genome. 
 
+Input file: .fasta, .gtf
+output file: .txt, .tab, and indexed files
 ```
 #!/bin/bash
 #star_index.sh
@@ -151,6 +157,9 @@ rm gencode.vM25.annotation.gtf
 STAR can then be run to align the fastq raw data to the genome. If the fastq files are in the compressed .gz format, the --readFilesCommand zcat argument is added. The output file should be unsorted, as required for the downstream quantification step using Salmon. The following options are shown according to the ENCODE recommendations.
 
 For paired-end data:
+Input file: trimmed_fastq.gz
+output file: .bam
+
 ```
 #!/bin/bash
 #star.sh
@@ -185,6 +194,8 @@ The bam file will be used in downstream analysis, the ```Aligned.toTranscriptome
 We use samtools inorder to get a sorted bam files that acts as an input for the quantification step and indexed files(.bai files - stats of indexded files can be known)
 Make sure to write and run the script in the same directory where the input files are present.
 
+Input file: .bam
+output file: .sorted.bam
 ```
 #!/bin/bash
 #sort.sh                                                                                                                                                                                 
@@ -196,7 +207,8 @@ do
 n=${f%%.sortedByCoord.out.bam}                                                                                                                                                              samtools sort -@ 16 -m 5G $f -o path/to/output/${n}.sorted.bam --output-fmt BAM
 done
 ```
-
+Input file: .sorted.bam
+output file: .sorted.bai
 ```
 #!/bin/bash
 #index.sh                                                                                                                                                                                 
@@ -219,6 +231,8 @@ tar xvfz subread-2.0.2-Linux-x86_64.tar.gz
 ```
 Now featureCounts can be found in ```subread-2.0.2-Linux-x86_64/bin/featureCounts```
 
+Input file: .sorted.bam
+output file: .txt
 ```
 #!/bin/bash
 
@@ -227,3 +241,4 @@ gunzip gencode.vM25.annotation.gtf.gz
 
 featureCounts -T 40 --countReadPairs -t exon -g gene_id -a gencode.vM25.annotation.gtf -o counts.txt *.bam
 ```
+Now, the output file ```counts.txt``` acts as input for Deseq2.
