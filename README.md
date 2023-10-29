@@ -204,10 +204,26 @@ done
 for f in *_trimmed_Aligned.sorted.bam # for each input sample
 
 do
-n=${f%%_trimmed_Aligned.sorted.bam}                                                                                                                                                         samtools index -@ 16 -m 14 $ ${n}.sorted.bai
+n=${f%%_trimmed_Aligned.sorted.bam}
+samtools index -@ 16 -m 14 $f /path/to/output/file/${n}.sorted.bai
 done
 ```
 
 ## Quantification
-The bam file previously aligned to the transcriptome by STAR will next be input into Stringtie in alignment-mode, in order to generate a matrix of gene counts. 
+The bam file previously aligned to the transcriptome by STAR will next be input into ```featureCounts```, in order to generate a matrix of gene counts. 
+Subread is a dependency inorder to run featureCounts. so install subreads
 
+```
+wget https://github.com/ShiLab-Bioinformatics/subread/releases/download/2.0.2/subread-2.0.2-Linux-x86_64.tar.gz
+tar xvfz subread-2.0.2-Linux-x86_64.tar.gz
+```
+Now featureCounts can be found in ```subread-2.0.2-Linux-x86_64/bin/featureCounts```
+
+```
+#!/bin/bash
+
+wget ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M25/gencode.vM25.annotation.gtf.gz
+gunzip gencode.vM25.annotation.gtf.gz
+
+featureCounts -T 40 --countReadPairs -t exon -g gene_id -a gencode.vM25.annotation.gtf -o counts.txt *.bam
+```
