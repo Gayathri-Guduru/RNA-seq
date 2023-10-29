@@ -1,5 +1,7 @@
 # RNA-seq: a step-by-step analysis pipeline
 
+![RNASeq_workflow drawio](https://github.com/Gayathri-Guduru/RNA-seq/assets/98939664/603e1540-3b95-48ab-bd13-51de810b3b4c)
+
 ## Prerequisites/Dependencies to run a RNA-seq pipeline.
 
 ### JAVA version above 11.0
