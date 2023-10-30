@@ -244,3 +244,105 @@ gunzip gencode.vM25.annotation.gtf.gz
 featureCounts -T 40 --countReadPairs -t exon -g gene_id -a gencode.vM25.annotation.gtf -o counts.txt *.bam
 ```
 Now, the output file ```counts.txt``` acts as input for Deseq2.
+
+Now, the Data Visualization is done in Rstudio with count.txt as input file.
+
+```{r}
+# Install and load necessary packages
+#install.packages("DESeq2")
+#install.packages("ggplot2")
+#install.packages("pheatmap")
+#install.packages("openxlsx")
+library(DESeq2)
+library(ggplot2)
+library(pheatmap)
+library(openxlsx)
+
+# Read and format the count data
+counts <- read.csv("/Users/hp/Desktop/rnaseq/counts.txt", sep="\t", header=TRUE, skip=1, row.names = 1)
+counts <- counts[,-c(1:5)]
+counts$Ensemble_ID <- rownames(counts)
+counts <- counts[, c(ncol(counts), 1:(ncol(counts)-1))]
+colnames(counts) <- c("Ensemble_ID", "WT_rep1_R1","WT_rep1_R2", "Knockout_rep1_R1","Knockout_rep1_R2", "WT_rep2_R1", "WT_rep2_R2", "Knockout_rep2_R1", "Knockout_rep2_R2")
+
+#counts <- counts[, c("Ensemble_ID", 1:(ncol(counts)-1))]
+
+# Extract metadata
+samples <- data.frame(row.names=colnames(counts)[-1], 
+                      condition=c(rep("WT", 4), rep("Knockout", 4)))
+
+# Create DESeq2 object
+dds <- DESeqDataSetFromMatrix(countData = counts[,-1], colData = samples, design = ~ condition)
+
+# Differential expression analysis
+dds <- DESeq(dds)
+
+# Extract results
+res <- results(dds)
+
+# Handle NAs in padj column
+res$padj[is.na(res$padj)] <- 1
+
+# Categorize genes and add Ensemble_ID column
+res_df <- as.data.frame(res)
+res_df$Ensemble_ID <- rownames(res_df)
+res_df <- res_df[, c("Ensemble_ID", setdiff(names(res_df), "Ensemble_ID"))]
+
+res_df$category <- ifelse(res_df$padj < 0.05 & res_df$log2FoldChange > 1, "Upregulated",
+                          ifelse(res_df$padj < 0.05 & res_df$log2FoldChange < -1, "Downregulated", "Non-significant"))
+
+# Select top 20 significant upregulated genes based on adjusted p-value
+filtered_genes <- res_df[res_df$padj < 0.05 & res_df$log2FoldChange > 1,]
+top20 <- filtered_genes %>% arrange(desc(log2FoldChange)) %>% head(20)
+#top20 <- head(filtered_genes[order(-filtered_genes$log2FoldChange)], 20)
+
+# Create an Excel workbook
+wb <- createWorkbook()
+
+# Add the two sheets with the respective data
+addWorksheet(wb, "DEG")
+writeData(wb, "DEG", res_df)
+
+addWorksheet(wb, "Top 20 Upregulated DEG")
+#writeData(wb, "Top 20 Upregulated DEG", top20)
+writeData(wb, "Top 20 Upregulated DEG", top20)
+
+# Save the workbook
+saveWorkbook(wb, "/Users/hp/Desktop/rnaseq/DEGs_Upregulated.xlsx", overwrite = TRUE)
+
+# Visualization: Volcano plot
+volcano_plot <- ggplot(res_df, aes(x = log2FoldChange, y = -log10(padj), color = category)) +
+  geom_point(size = 1.5) +
+  theme_minimal() +
+  labs(
+    title = "Volcano plot",
+    x= "log2FoldChange", 
+    y= "-log10(padj)", 
+    color = "Category"
+  ) +
+  scale_color_manual(values = c("Upregulated" = "red", "Downregulated" = "blue", "Non-significant" = "grey50")) +
+  theme(plot.title = element_text(size= 14, color = "white"),
+    panel.background = element_rect(fill = "white"),
+    text = element_text(color = "white"),  # Set the default text color to white
+    axis.title.x = element_text(color = "white", size = 12),
+    axis.title.y  = element_text(color = "white", size = 12)
+  )
+
+volcano_plot
+ggsave(filename = "/Users/hp/Desktop/rnaseq/volcano_plot.png", plot = volcano_plot)
+
+# Visualization: Heatmap
+# Extracting top 20 genes based on p-value
+topgenes <- rownames(top20)
+mat <- assay(dds)[topgenes,]
+mat <- log2(mat + 1)
+heat_map <- pheatmap(mat, show_rownames = TRUE, bg = "white")
+
+# Save the pheatmap as a PNG image to the specified path
+ggsave(filename = "/Users/hp/Desktop/rnaseq/pheatmap.png", heat_map)
+
+# Return top 20 upregulated genes
+top20
+```
+![volcano_plot](https://github.com/Gayathri-Guduru/RNA-seq/assets/98939664/8db276d6-5e88-4de3-b391-2738479b8556)
+![pheatmap](https://github.com/Gayathri-Guduru/RNA-seq/assets/98939664/e74d19b6-1b31-4330-8e95-1b3b72579ce7)
